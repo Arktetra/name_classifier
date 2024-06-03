@@ -4,6 +4,7 @@ import pandas as pd
 
 import torch
 from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 
 from pathlib import Path
 import string
@@ -27,12 +28,14 @@ class CustomDataset(Dataset):
         self.dataframe = create_dataframe(root_dir)
         
     def __len__(self):
-        return len(self.input)
+        return len(self.dataframe)
     
     def __getitem__(self, idx):
         (name, language) = (self.dataframe.iloc[idx, 0], self.dataframe.iloc[idx, 1])
         sample = {"name": name, "language": language}
         return sample
+    
+
     
 
 def unicode_to_data(line: str) -> str:
@@ -126,3 +129,4 @@ def create_dataframe(path) -> pd.DataFrame:
     category_line_df = pd.DataFrame(category_line)
     category_line_df.columns = ["Name", "Language"]
     return category_line_df
+
