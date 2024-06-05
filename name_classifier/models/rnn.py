@@ -15,6 +15,7 @@ class RNN(nn.Module):
         output_size (int): size of the output layer.
     """
     def __init__(self, input_size: int, hidden_size: int, output_size: int):
+        super(RNN, self).__init__()
         self.hidden_size = hidden_size
         self.i2h = nn.Linear(input_size, hidden_size)
         self.h2h = nn.Linear(hidden_size, hidden_size)
