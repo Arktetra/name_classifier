@@ -11,7 +11,7 @@ import string
 import unicodedata
 
 ALL_LETTERS = string.ascii_letters + " .,;'"
-N_LETTERS = len(ALL_LETTERS)
+N_LETTERS = len(ALL_LETTERS) 
 
 class CustomDataset(Dataset):
     """Creates a custom dataset for name classification.
@@ -32,8 +32,7 @@ class CustomDataset(Dataset):
     
     def __getitem__(self, idx):
         (name, language) = (self.dataframe.iloc[idx, 0], self.dataframe.iloc[idx, 1])
-        sample = {"name": line_to_tensor(name), "language": torch.tensor(self.categories.index(language))}
-        return sample
+        return line_to_tensor(name), torch.tensor([self.categories.index(language)])
     
 
     
@@ -128,7 +127,10 @@ def create_dataframe(path) -> Tuple[pd.DataFrame, List]:
     (category_line, categories) = get_names(path)
     category_line_df = pd.DataFrame(category_line)
     category_line_df.columns = ["Name", "Language"]
+    global n_categories
+    n_categories = len(categories)
     return category_line_df, categories
+    
 
 if __name__ == "__main__":
     dataset = CustomDataset(
