@@ -37,3 +37,16 @@ def create_dataloader(
     )
     
     return dataloader
+
+if __name__ == "__main__":
+    dataloader = create_dataloader(
+        Path("data/names"),
+        1,
+        2,
+        True,
+        True
+    )
+    
+    sample = next(iter(dataloader))
+    
+    print(sample)

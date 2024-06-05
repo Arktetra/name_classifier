@@ -25,14 +25,14 @@ class CustomDataset(Dataset):
     def __init__(self, root_dir, tranform = None, target_transform = None):
         super().__init__()
         self.root_dir = root_dir
-        self.dataframe = create_dataframe(root_dir)
+        (self.dataframe, self.categories) = create_dataframe(root_dir)
         
     def __len__(self):
         return len(self.dataframe)
     
     def __getitem__(self, idx):
         (name, language) = (self.dataframe.iloc[idx, 0], self.dataframe.iloc[idx, 1])
-        sample = {"name": name, "language": language}
+        sample = {"name": line_to_tensor(name), "language": torch.tensor(self.categories.index(language))}
         return sample
     
 
@@ -116,17 +116,25 @@ def line_to_tensor(line: str) -> torch.tensor:
         line_tensor[idx][0][letter_to_index(letter)] = 1.0
     return line_tensor
 
-def create_dataframe(path) -> pd.DataFrame:
+def create_dataframe(path) -> Tuple[pd.DataFrame, List]:
     """creates a dataframe with names and their corresponding languages.
 
     Args:
         path (Path): path to the directory containing data files.
 
     Returns:
-        pd.DataFrame: A pandas dataframe containing names with their corresponding languages.
+        Tuple[pd.DataFrame, List]: A pandas dataframe containing names with their corresponding languages and the list of languages.
     """
     (category_line, categories) = get_names(path)
     category_line_df = pd.DataFrame(category_line)
     category_line_df.columns = ["Name", "Language"]
-    return category_line_df
+    return category_line_df, categories
 
+if __name__ == "__main__":
+    dataset = CustomDataset(
+        Path("data/names")
+    )
+    
+    sample = next(iter(dataset))
+    
+    print(sample)
