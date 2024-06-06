@@ -16,10 +16,13 @@ class RNN(nn.Module):
     """
     def __init__(self, input_size: int, hidden_size: int, output_size: int):
         super(RNN, self).__init__()
+        
         self.hidden_size = hidden_size
         self.i2h = nn.Linear(input_size, hidden_size)
         self.h2h = nn.Linear(hidden_size, hidden_size)
         self.h2o = nn.Linear(hidden_size, output_size)
+        
+        self.softmax = nn.LogSoftmax(dim = 1)
         
     def forward(self, input: torch.tensor, hidden: torch.tensor) -> Tuple[torch.tensor, torch.tensor]:
         """Applies the RNN to the input and its hidden state.
@@ -33,7 +36,7 @@ class RNN(nn.Module):
         """
         hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
         output = self.h2o(hidden)
-        output = F.softmax(output)
+        output = self.softmax(output)
         return output, hidden
     
     def init_hidden(self) -> torch.tensor:
