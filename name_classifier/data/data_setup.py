@@ -8,9 +8,9 @@ from name_classifier.data.utils import CustomDataset
 def create_dataloader(
     train_dir: Path,
     batch_size: int,
-    num_workers: int,
-    persistent_workers: bool,
-    pin_memory: bool
+    num_workers: int = 0,
+    persistent_workers: bool = False,
+    pin_memory: bool = False
 ) -> DataLoader:
     """Creates a dataloader for the given data.
 
