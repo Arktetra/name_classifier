@@ -1,18 +1,18 @@
 from pathlib import Path
+from typing import Tuple
 
 import torch
-from torch.utils.data import DataLoader
 
-from name_classifier.data.utils import CustomDataset
+from utils import CustomDataset
 
-def create_dataloader(
-    train_dir: Path,
+def create_dataloaders(
+    root_dir: Path,
     batch_size: int,
     num_workers: int = 0,
     persistent_workers: bool = False,
     pin_memory: bool = False
-) -> DataLoader:
-    """Creates a dataloader for the given data.
+) -> Tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]:
+    """Creates a train and test dataloader from the given root directory.
 
     Args:
         train_dir (Path): a path to the directory containing training data.
@@ -22,31 +22,45 @@ def create_dataloader(
         pin_memory (bool): whether the memory is pinned or not.
 
     Returns:
-        DataLoader: _description_
+        Tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]
     """
     
-    dataset = CustomDataset(train_dir)
+    # create a custom dataset
+    dataset = CustomDataset(root_dir)
     
-    dataloader = DataLoader(
-        dataset = dataset,
+    # split the dataset into train and test dataset with 80% in train and 
+    # 20% in test
+    train_dataset, test_dataset = torch.utils.data.random_split(
+        dataset, 
+        [int(0.8 * len(dataset)), len(dataset) - int(0.8 * len(dataset))],
+        generator = torch.Generator().manual_seed(42)
+    )
+
+    train_dataloader = torch.utils.data.DataLoader(
+        dataset = train_dataset,
         batch_size = batch_size,
         shuffle = True,
         num_workers = num_workers,
         persistent_workers = persistent_workers,
-        pin_memory = True
+        pin_memory = pin_memory
     )
     
-    return dataloader
+    test_dataloader = torch.utils.data.DataLoader(
+        dataset = test_dataset,
+        batch_size = batch_size,
+        shuffle = True,
+        num_workers = num_workers,
+        persistent_workers = persistent_workers,
+        pin_memory = pin_memory
+    )
+    
+    return train_dataloader, test_dataloader
 
 if __name__ == "__main__":
-    dataloader = create_dataloader(
+    train_dataloader, test_dataloader = create_dataloaders(
         Path("data/names"),
-        1,
-        2,
-        True,
-        True
+        1
     )
     
-    sample = next(iter(dataloader))
-    
-    print(sample)
+    print(len(train_dataloader))
+    print(len(test_dataloader))
