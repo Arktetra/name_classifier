@@ -3,7 +3,7 @@ from typing import Tuple
 
 import torch
 
-from utils import CustomDataset
+from name_classifier.data.utils import CustomDataset
 
 def create_dataloaders(
     root_dir: Path,

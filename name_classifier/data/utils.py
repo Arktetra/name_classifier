@@ -10,8 +10,7 @@ from pathlib import Path
 import string
 import unicodedata
 
-ALL_LETTERS = string.ascii_letters + " .,;'"
-N_LETTERS = len(ALL_LETTERS) 
+import name_classifier.metadata.names as metadata
 
 class CustomDataset(Dataset):
     """Creates a custom dataset for name classification.
@@ -50,7 +49,7 @@ def unicode_to_data(line: str) -> str:
     return ''.join(
         c for c in unicodedata.normalize("NFD", line)
         if unicodedata.category(c) != "Mn"
-        and c in ALL_LETTERS
+        and c in metadata.ALL_LETTERS
     )
 
 def get_names(path: Path) -> Tuple[Dict[str, List], List]:
@@ -84,7 +83,7 @@ def letter_to_index(letter: str) -> int:
         int: the index of the letter in ascii_letters.
     """
     
-    return ALL_LETTERS.find(letter)    
+    return metadata.ALL_LETTERS.find(letter)    
 
 def letter_to_tensor(letter: str) -> torch.tensor:
     """Converts a letter to one hot vector.
@@ -96,7 +95,7 @@ def letter_to_tensor(letter: str) -> torch.tensor:
         torch.tensor: a one hot vector.
     """
     
-    letter_tensor = torch.zeros((1, N_LETTERS))
+    letter_tensor = torch.zeros((1, metadata.N_LETTERS))
     letter_tensor[0][letter_to_index(letter)] = 1.0
     return letter_tensor
 
@@ -110,10 +109,22 @@ def line_to_tensor(line: str) -> torch.tensor:
         torch.tensor: a tensor containing one hot vectors representing the string.
     """
     
-    line_tensor = torch.zeros((len(line), 1, N_LETTERS))
+    line_tensor = torch.zeros((len(line), 1, metadata.N_LETTERS))
     for idx, letter in enumerate(line):
         line_tensor[idx][0][letter_to_index(letter)] = 1.0
     return line_tensor
+
+def tensor_to_category(tensor: torch.tensor) -> str:
+    """Get the category of the name from the output of the model.
+
+    Args:
+        tensor (torch.tensor): output of the model.
+
+    Returns:
+        str: category.
+    """
+    _, top_idx = tensor.topk(1)
+    return metadata.CATEGORIES[top_idx[0].item()]
 
 def create_dataframe(path) -> Tuple[pd.DataFrame, List]:
     """creates a dataframe with names and their corresponding languages.
