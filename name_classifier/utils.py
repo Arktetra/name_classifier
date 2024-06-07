@@ -17,7 +17,7 @@ def save_model(
     
     target_dir = Path(dir)
     # Create the directory if it doesn't exist
-    target_dir.make_dir(parents = True, exist_ok = True)
+    target_dir.mkdir(parents = True, exist_ok = True)
     
     # Check if the model_name is valid
     assert model_name.endswith(".pt") or model_name.endswith(".pth"), "model_name should end with either '.pt' or '.pth'."
