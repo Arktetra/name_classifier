@@ -84,9 +84,11 @@ def test_step(
             # send the data to the target device
             X, y = X.to(device), y.to(device)
             
+            hidden = model.init_hidden().to(device)
+            
             # forward pass
             for i in range(X.size()[1]):
-                test_pred, hidden = model(test_pred, hidden)
+                test_pred, hidden = model(X[0, 1], hidden)
             
             # calculate and accumulate the loss
             loss = criterion(test_pred, y[0])
@@ -146,7 +148,6 @@ def train(
             model,
             test_dataloader,
             criterion,
-            optimizer,
             device
         )
         
