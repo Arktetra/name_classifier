@@ -88,7 +88,7 @@ def test_step(
             
             # forward pass
             for i in range(X.size()[1]):
-                test_pred, hidden = model(X[0, 1], hidden)
+                test_pred, hidden = model(X[0, i], hidden)
             
             # calculate and accumulate the loss
             loss = criterion(test_pred, y[0])
