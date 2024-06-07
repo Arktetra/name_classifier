@@ -2,10 +2,10 @@ import torch
 
 import argparse
 
-from data.utils import line_to_tensor
-from utils import load_model
-from models.rnn import RNN
-import metadata.names as metadata
+from name_classifier.data.utils import line_to_tensor
+from name_classifier.utils import load_model
+from name_classifier.models.rnn import RNN
+import name_classifier.metadata.names as metadata
 
 def _setup_parser():
     parser = argparse.ArgumentParser()
@@ -31,12 +31,12 @@ def predict(model, input, n_predictions = 3):
             
     top_v, top_i = output.topk(n_predictions, 1, True)
     
-    predictions = []
+    predictions = {}
     
     for i in range(n_predictions):
         value = top_v[0][i].item()
         idx = top_i[0][i].item()
-        predictions.append([value, metadata.CATEGORIES[idx]])
+        predictions[metadata.CATEGORIES[idx]] = value
     
     return predictions
         
