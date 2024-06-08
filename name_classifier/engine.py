@@ -36,10 +36,10 @@ def train_step(
         
         # forward pass 
         for i in range(X.size()[1]):
-            y_pred, hidden = model(X[0, i], hidden)
+            y_pred, hidden = model(X[:, i], hidden)
         
         # calculate and accumulate the loss
-        loss = criterion(y_pred, y[0])
+        loss = criterion(y_pred, torch.flatten(y))
         train_loss += loss.item()
         
         optimizer.zero_grad()
@@ -50,7 +50,7 @@ def train_step(
             
         # calculate and accumulate the accuracy
         y_pred_class = torch.argmax(y_pred, dim = 1)
-        train_acc += ((y_pred_class == y).sum().item() / len(y_pred_class))
+        train_acc += ((y_pred_class == y).sum().item() / len(y_pred))
         
     # calculate the average loss and accuracy
     train_loss = train_loss / len(dataloader)
@@ -88,15 +88,15 @@ def test_step(
             
             # forward pass
             for i in range(X.size()[1]):
-                test_pred, hidden = model(X[0, i], hidden)
+                test_pred, hidden = model(X[:, i], hidden)
             
             # calculate and accumulate the loss
-            loss = criterion(test_pred, y[0])
+            loss = criterion(test_pred, torch.flatten(y))
             test_loss += loss.item()
             
             # calculate and accumulate the accuracy
             test_pred_class = torch.argmax(test_pred, dim = 1)
-            test_acc += ((test_pred_class == y).sum().item() / len(test_pred_class))
+            test_acc += ((test_pred_class == y).sum().item() / len(test_pred))
            
     # calculate the average loss and accuracy 
     test_loss = test_loss / len(dataloader)
