@@ -31,9 +31,7 @@ class CustomDataset(Dataset):
     
     def __getitem__(self, idx):
         (name, language) = (self.dataframe.iloc[idx, 0], self.dataframe.iloc[idx, 1])
-        return line_to_tensor(name), torch.tensor([self.categories.index(language)])
-    
-
+        return line_to_tensor(name).squeeze(), torch.tensor([self.categories.index(language)])
     
 
 def unicode_to_data(line: str) -> str:
