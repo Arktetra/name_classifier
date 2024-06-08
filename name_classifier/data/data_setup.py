@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional, Callable
 
 import torch
 
@@ -10,7 +10,8 @@ def create_dataloaders(
     batch_size: int,
     num_workers: int = 0,
     persistent_workers: bool = False,
-    pin_memory: bool = False
+    pin_memory: bool = False,
+    collate_fn: Optional[Callable] = None
 ) -> Tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]:
     """Creates a train and test dataloader from the given root directory.
 
@@ -24,6 +25,9 @@ def create_dataloaders(
     Returns:
         Tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]
     """
+    
+    if collate_fn == None:
+        collate_fn = torch.utils.data.default_collate()
     
     # create a custom dataset
     dataset = CustomDataset(root_dir)
@@ -39,6 +43,7 @@ def create_dataloaders(
     train_dataloader = torch.utils.data.DataLoader(
         dataset = train_dataset,
         batch_size = batch_size,
+        collate_fn = collate_fn,
         shuffle = True,
         num_workers = num_workers,
         persistent_workers = persistent_workers,
@@ -48,13 +53,14 @@ def create_dataloaders(
     test_dataloader = torch.utils.data.DataLoader(
         dataset = test_dataset,
         batch_size = batch_size,
+        collate_fn = collate_fn,
         shuffle = True,
         num_workers = num_workers,
         persistent_workers = persistent_workers,
         pin_memory = pin_memory
     )
     
-    return train_dataloader, test_dataloader
+    return train_dataloader, test_dataloader      
 
 if __name__ == "__main__":
     train_dataloader, test_dataloader = create_dataloaders(

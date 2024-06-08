@@ -140,6 +140,25 @@ def create_dataframe(path) -> Tuple[pd.DataFrame, List]:
     n_categories = len(categories)
     return category_line_df, categories
     
+def custom_collate_function(batch: Tuple[torch.tensor, torch.tensor]) -> Tuple[torch.tensor, torch.tensor]:
+    """collates all items in the batch to same size by padding.
+
+    Args:
+        batch (Tuple[torch.tensor, torch.tensor]): a batch of (input, target) to collate.
+
+    Returns:
+        Tuple[torch.tensor, torch.tensor]: a batch of collated (input, target).
+    """
+    # Find the maximum length sequence in the batch
+    max_len = max(len(item[0]) for item in batch)
+    
+    batch_x = []
+    
+    for item in batch:
+        pad_len = max_len - len(item[0])
+        batch_x.append(torch.concat((item[0], torch.zeros((pad_len, item[0].size()[1])))))
+        
+    return torch.stack(batch_x, dim = 0), torch.stack([item[1] for item in batch], dim = 0)
 
 if __name__ == "__main__":
     dataset = CustomDataset(
