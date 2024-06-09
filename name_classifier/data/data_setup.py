@@ -4,6 +4,7 @@ from typing import Tuple, Optional, Callable
 import torch
 
 from name_classifier.data.utils import CustomDataset
+from name_classifier.data.utils import custom_collate_function
 
 def create_dataloaders(
     root_dir: Path,
@@ -36,7 +37,7 @@ def create_dataloaders(
     # 20% in test
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset, 
-        [int(0.8 * len(dataset)), len(dataset) - int(0.8 * len(dataset))],
+        [int(0.9 * len(dataset)), len(dataset) - int(0.9 * len(dataset))],
         generator = torch.Generator().manual_seed(42)
     )
 
@@ -65,7 +66,8 @@ def create_dataloaders(
 if __name__ == "__main__":
     train_dataloader, test_dataloader = create_dataloaders(
         Path("data/names"),
-        1
+        64,
+        collate_fn = custom_collate_function
     )
     
     print(len(train_dataloader))
