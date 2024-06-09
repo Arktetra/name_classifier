@@ -8,6 +8,8 @@ import metadata.names as metadata
 from models.rnn import RNN
 import utils, engine
 
+from name_classifier.data.utils import custom_collate_function
+
 HIDDEN_SIZE = 128
 
 def _setup_parser() -> argparse.ArgumentParser:
@@ -56,6 +58,7 @@ def main():
     train_dataloader, test_dataloader = data_setup.create_dataloaders(
         root_dir = data_dir,
         batch_size = args.batch_size,
+        collate_fn = custom_collate_function,
         num_workers = 0,
         persistent_workers = False,
         pin_memory = False
@@ -80,7 +83,7 @@ def main():
     utils.save_model(
         model,
         "models",
-        model_name = "simple_rnn.pth"
+        model_name = args.model + ".pth"
     )
 
 if __name__ == "__main__":

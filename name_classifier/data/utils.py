@@ -156,6 +156,8 @@ def custom_collate_function(batch: Tuple[torch.tensor, torch.tensor]) -> Tuple[t
     
     for item in batch:
         pad_len = max_len - len(item[0])
+        
+        # Add padding to the left to let the RNN learn effectively.
         batch_x.append(torch.concat((torch.zeros((pad_len, item[0].size()[1])), item[0])))
         
     return torch.stack(batch_x, dim = 0), torch.stack([item[1] for item in batch], dim = 0)
