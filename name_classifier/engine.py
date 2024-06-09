@@ -41,7 +41,7 @@ def train_step(
         # calculate and accumulate the loss
         loss = criterion(y_pred, torch.flatten(y))
         train_loss += loss.item()
-        
+            
         optimizer.zero_grad()
         
         loss.backward()
@@ -50,12 +50,13 @@ def train_step(
             
         # calculate and accumulate the accuracy
         y_pred_class = torch.argmax(y_pred, dim = 1)
-        train_acc += ((y_pred_class == y).sum().item() / len(y_pred))
+       
+        train_acc += ((y_pred_class == torch.flatten(y)).sum() / len(y_pred))
         
     # calculate the average loss and accuracy
     train_loss = train_loss / len(dataloader)
     train_acc = train_acc / len(dataloader)
-    
+        
     return train_loss, train_acc
 
 def test_step(
@@ -96,7 +97,7 @@ def test_step(
             
             # calculate and accumulate the accuracy
             test_pred_class = torch.argmax(test_pred, dim = 1)
-            test_acc += ((test_pred_class == y).sum().item() / len(test_pred))
+            test_acc += ((test_pred_class == torch.flatten(y)).sum().item() / len(test_pred))
            
     # calculate the average loss and accuracy 
     test_loss = test_loss / len(dataloader)
@@ -153,10 +154,10 @@ def train(
         
         print(
             f"Epoch: {epoch + 1} | "
-            f"train_loss: {train_loss} | "
-            f"train_acc: {train_acc} | "
-            f"test_loss: {test_loss} | "
-            f"test_acc: {test_acc}"
+            f"train_loss: {train_loss:.4f} | "
+            f"train_acc: {train_acc:.4f} | "
+            f"test_loss: {test_loss:.4f} | "
+            f"test_acc: {test_acc:.4f}"
         )
         
         # update the results dicionary
