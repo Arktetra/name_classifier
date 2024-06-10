@@ -1,6 +1,7 @@
 import torch
 
 from pathlib import Path
+from datetime import datetime
 
 def save_model(
     model: torch.nn.Module,
@@ -43,4 +44,30 @@ def load_model(
     
     # Load the model
     model.load_state_dict(torch.load(path))
+    
+def create_writer(
+    model_name: str,
+    extra: str
+) -> torch.utils.tensorboard.SummaryWriter:
+    """Creates a Tensorboard summary writer instance saving to a specific 
+    directory log_dir.
+    
+    log_dir is a combination of runs/timestamp/model_name/extra, where timestamp
+    is the current date in YYYY-MM-DD format.
+
+    Args:
+        model_name (str): Name of the model.
+        extra (str): Anything extra to add to the directory. Defaults to None.
+
+    Returns:
+        torch.utils.tensorboard.SummaryWriter: An instance of summary writer saving to log_dir.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d")
+    
+    if extra:
+        log_dir = Path("runs") / timestamp /model_name / extra
+    else:
+        log_dir = Path("runs") / timestamp / model_name
         
+    print(f"[INFO] Created SummaryWriter, saving to: {log_dir}...")
+    return torch.utils.tensorboard.SummaryWriter(log_dir = log_dir)
