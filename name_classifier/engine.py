@@ -1,5 +1,7 @@
 import torch
 
+from torch.utils.tensorboard.writer import SummaryWriter
+
 from tqdm.auto import tqdm
 from typing import Tuple, Dict, List
 
@@ -112,7 +114,8 @@ def train(
     criterion: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
     epochs: int,
-    device: torch.device
+    device: torch.device,
+    writer: SummaryWriter
 ) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
@@ -159,6 +162,17 @@ def train(
             f"test_loss: {test_loss:.4f} | "
             f"test_acc: {test_acc:.4f}"
         )
+        
+        if writer:
+            writer.add_scalars(main_tag = "train/test loss", 
+                            tag_scalar_dict = {"train": train_loss,
+                                                "test": test_loss}, 
+                            global_step = epoch)
+            writer.add_scalars(main_tag = "train/test accuracy", 
+                            tag_scalar_dict = {"train": train_acc,
+                                                "test": test_acc}, 
+                            global_step = epoch)
+            writer.close()
         
         # update the results dicionary
         results["train_loss"].append(train_loss)

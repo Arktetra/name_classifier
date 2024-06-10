@@ -8,6 +8,8 @@ import metadata.names as metadata
 from models.rnn import RNN
 import utils, engine
 
+from torch.utils import tensorboard
+
 from name_classifier.data.utils import custom_collate_function
 
 HIDDEN_SIZE = 128
@@ -49,19 +51,19 @@ def main():
     parser = _setup_parser()
     args = parser.parse_args()
     
-    
-    
     data_dir = Path("data/names")
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    
+    print(f"Using device: {device}")
     
     train_dataloader, test_dataloader = data_setup.create_dataloaders(
         root_dir = data_dir,
         batch_size = args.batch_size,
         collate_fn = custom_collate_function,
-        num_workers = 0,
-        persistent_workers = False,
-        pin_memory = False
+        num_workers = 2,
+        persistent_workers = True,
+        pin_memory = True,
     )
 
     model = RNN(metadata.N_LETTERS, 128, metadata.N_CATEGORIES)
@@ -77,7 +79,8 @@ def main():
         criterion,
         optimizer,
         args.epochs,
-        device
+        device,
+        writer = tensorboard.SummaryWriter()
     )
 
     utils.save_model(
