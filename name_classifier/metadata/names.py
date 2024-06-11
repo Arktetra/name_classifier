@@ -1,8 +1,8 @@
-from pathlib import Path
+"""A module containing metadata."""
 
 import string
 
-import name_classifier.metadata.shared as shared
+from name_classifier.metadata import shared
 
 RAW_DATA_DIRNAME = shared.DATA_DIRNAME / "names"
 

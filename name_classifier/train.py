@@ -1,12 +1,15 @@
+"""A script to train a model."""
+
 from pathlib import Path
 import argparse
 import torch
 
-import data.data_setup as data_setup
-import metadata.names as metadata
+from data import data_setup
+import name_classifier.metadata.names as metadata
 
-from models.rnn import RNN
-import utils, engine
+from name_classifier.models.rnn import RNN
+import name_classifier.utils as utils
+import name_classifier.engine as engine
 
 from torch.utils import tensorboard
 
@@ -14,63 +17,57 @@ from name_classifier.data.utils import custom_collate_function
 
 HIDDEN_SIZE = 128
 
+
 def _setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument(
-        "--model",
-        default = "simple_rnn",
-        type = str,
-        help = "a model to train"
+        "--model", default="simple_rnn", type=str, help="a model to train"
     )
-    
+
     parser.add_argument(
-        "--learning_rate",
-        type = float,
-        default = 0.005,
-        help = "learning rate"
+        "--learning_rate", type=float, default=0.005, help="learning rate"
     )
-    
+
     parser.add_argument(
         "--batch_size",
-        type = int,
-        default = 1,
-        help = "number of examples to load in a batch."
+        type=int,
+        default=1,
+        help="number of examples to load in a batch.",
     )
-    
+
     parser.add_argument(
-        "--epochs",
-        type = int,
-        default = 5,
-        help = "number of epochs to train the model for."
+        "--epochs", type=int, default=5, help="number of epochs to train the model for."
     )
-    
+
     return parser
 
+
 def main():
+    """Defines the script for training a model."""
     parser = _setup_parser()
     args = parser.parse_args()
-    
+
     data_dir = Path("data/names")
-    
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    
+
     print(f"Using device: {device}")
-    
+
     train_dataloader, test_dataloader = data_setup.create_dataloaders(
-        root_dir = data_dir,
-        batch_size = args.batch_size,
-        collate_fn = custom_collate_function,
-        num_workers = 2,
-        persistent_workers = True,
-        pin_memory = True,
+        root_dir=data_dir,
+        batch_size=args.batch_size,
+        collate_fn=custom_collate_function,
+        num_workers=2,
+        persistent_workers=True,
+        pin_memory=True,
     )
 
     model = RNN(metadata.N_LETTERS, 128, metadata.N_CATEGORIES)
     model.to(device)
 
     criterion = torch.nn.NLLLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     engine.train(
         model,
@@ -80,14 +77,11 @@ def main():
         optimizer,
         args.epochs,
         device,
-        writer = tensorboard.SummaryWriter()
+        writer=tensorboard.SummaryWriter(),
     )
 
-    utils.save_model(
-        model,
-        "models",
-        model_name = args.model + ".pth"
-    )
+    utils.save_model(model, "models", model_name=args.model + ".pth")
+
 
 if __name__ == "__main__":
     main()
