@@ -8,6 +8,7 @@ from data import data_setup
 import name_classifier.metadata.names as metadata
 
 from name_classifier.models.rnn import RNN
+from name_classifier.models.lstm import LSTM
 import name_classifier.utils as utils
 import name_classifier.engine as engine
 
@@ -63,7 +64,11 @@ def main():
         pin_memory=True,
     )
 
-    model = RNN(metadata.N_LETTERS, 128, metadata.N_CATEGORIES)
+    if args.model == "simple_rnn":
+        model = RNN(metadata.N_LETTERS, 128, metadata.N_CATEGORIES)
+    elif args.model == "simple_lstm":
+        model = LSTM(metadata.N_LETTERS, 128, metadata.N_CATEGORIES)
+
     model.to(device)
 
     criterion = torch.nn.NLLLoss()
