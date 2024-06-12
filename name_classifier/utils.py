@@ -5,6 +5,7 @@ import torch
 from pathlib import Path
 from datetime import datetime
 
+from torch.utils import tensorboard
 
 def save_model(model: torch.nn.Module, dir: str, model_name: str) -> None:
     """Saves a PyTorch model to the specified directory.
@@ -71,4 +72,4 @@ def create_writer(model_name: str, extra: str) -> torch.utils.tensorboard.Summar
         log_dir = Path("runs") / timestamp / model_name
 
     print(f"[INFO] Created SummaryWriter, saving to: {log_dir}...")
-    return torch.utils.tensorboard.SummaryWriter(log_dir=log_dir)
+    return tensorboard.SummaryWriter(log_dir=log_dir)
