@@ -2,7 +2,6 @@
 
 from typing import Dict, List, Tuple
 
-import pandas as pd
 
 import torch
 from torch.utils.data import Dataset
@@ -28,15 +27,16 @@ class CustomDataset(Dataset):
     def __init__(self, root_dir, tranform=None, target_transform=None):
         super().__init__()
         self.root_dir = root_dir
-        (self.dataframe, self.categories) = create_dataframe(root_dir)
+        self.data = get_names(root_dir)
 
     def __len__(self):
-        return len(self.dataframe)
+        return len(self.data)
 
     def __getitem__(self, idx):
-        (name, language) = (self.dataframe.iloc[idx, 0], self.dataframe.iloc[idx, 1])
+        (name, language) = (self.data[idx][0], self.data[idx][1])
+
         return line_to_tensor(name).squeeze(), torch.tensor(
-            [self.categories.index(language)]
+            [metadata.CATEGORIES.index(language)]
         )
 
 
@@ -72,18 +72,15 @@ def get_names(path: Path) -> Tuple[Dict[str, List], List]:
 
     """
     category_line = []
-    categories = []
 
     for file_path in path.iterdir():
-        categories.append(file_path.stem)
         with open(file_path, encoding="utf-8") as f:
-            # category_line[file_path.stem] = [unicode_to_data(line.strip()) for line in f.readlines()]
-            category_line += (
+            category_line += {
                 (unicode_to_data(line.strip()), file_path.stem)
                 for line in f.readlines()
-            )
+            }
 
-    return category_line, categories
+    return category_line
 
 
 def letter_to_index(letter: str) -> int:
@@ -116,6 +113,21 @@ def letter_to_tensor(letter: str) -> torch.tensor:
     letter_tensor = torch.zeros((1, metadata.N_LETTERS))
     letter_tensor[0][letter_to_index(letter)] = 1.0
     return letter_tensor
+
+def tensor_to_letter(tensor: torch.tensor) -> torch.tensor:
+    """Converts a one hot vector to letter.
+
+    Args:
+    ----
+        tensor (torch.tensor): a one hot vector.
+
+    Returns:
+    -------
+        torch.tensor: a single character.
+
+    """
+    idx = torch.argmax(tensor).item()
+    return metadata.ALL_LETTERS[idx]
 
 
 def line_to_tensor(line: str) -> torch.tensor:
@@ -151,27 +163,6 @@ def tensor_to_category(tensor: torch.tensor) -> str:
     _, top_idx = tensor.topk(1)
     return metadata.CATEGORIES[top_idx[0].item()]
 
-
-def create_dataframe(path) -> Tuple[pd.DataFrame, List]:
-    """Creates a dataframe with names and their corresponding languages.
-
-    Args:
-    ----
-        path (Path): path to the directory containing data files.
-
-    Returns:
-    -------
-        Tuple[pd.DataFrame, List]: A pandas dataframe containing names with their corresponding languages and the list of languages.
-
-    """
-    (category_line, categories) = get_names(path)
-    category_line_df = pd.DataFrame(category_line)
-    category_line_df.columns = ["Name", "Language"]
-    global n_categories
-    n_categories = len(categories)
-    return category_line_df, categories
-
-
 def custom_collate_function(
     batch: Tuple[torch.tensor, torch.tensor],
 ) -> Tuple[torch.tensor, torch.tensor]:
@@ -205,6 +196,10 @@ def custom_collate_function(
 if __name__ == "__main__":
     dataset = CustomDataset(Path("data/names"))
 
-    sample = next(iter(dataset))
+    (x, y) = next(iter(dataset))
 
-    print(sample)
+    # convert each one hot vector in x to corresponding letter
+    for t in x:
+        print(tensor_to_letter(t))
+
+    print(tensor_to_category(y))
