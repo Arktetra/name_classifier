@@ -2,6 +2,8 @@
 
 import torch
 
+import wandb
+
 from torch.utils.tensorboard.writer import SummaryWriter
 
 from tqdm.auto import tqdm
@@ -16,6 +18,7 @@ def train(
     epochs: int,
     device: torch.device,
     writer: SummaryWriter,
+    log: bool = False
 ) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
@@ -75,6 +78,16 @@ def train(
                 global_step=epoch,
             )
             writer.close()
+
+        if log:
+            wandb.log({
+                "train_loss": train_loss,
+                "val_loss": val_loss
+            })
+            wandb.log({
+                "train_acc": train_acc,
+                "val_acc": val_acc
+            })
 
         # update the results dicionary
         results["train_loss"].append(train_loss)
